@@ -1,0 +1,564 @@
+---
+title: "Assignment 2"
+output:
+  html_document:
+    df_print: paged
+---
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+#Part 1
+```{r}
+banknames <- read.csv("D:\\Machine Learning\\Assignment 2\\Current\\bank-full.csv" , sep = ";")
+str(banknames)
+summary(banknames)
+```
+#Part 2
+```{r}
+
+cat("age; continuous variable\n
+    job; (unordered) variables\n
+    marital; (unordered) variables\n
+    education; (unordered) variables\n
+    default; (unordered) variables\n
+    balance; continuous variables\n
+    housing; (unordered) variables\n
+    loan; (unordered) variables\n
+    contact; (unordered) variablesl\n
+    day; continuous variables\n
+    month; (ordered) variables\n
+    duration; continuous variable\n
+    campaign; continuous variables\n
+    pdays; continuous variables\n
+    previous; continuous variables\n
+    poutcome; (unordered) variables\n
+    y; (unordered) variables\n"
+    )
+
+```
+#Part 3
+```{r}
+y_frequency <- table(banknames$y)
+print(y_frequency)
+
+cat("hence, Y is not balanced")
+```
+#Part 4
+```{r}
+banknames$y <- factor(banknames$y, levels = c("yes","no"),labels = c("yes","no"))
+summary(banknames)
+```
+
+```{r}
+
+
+chi_square <- chisq.test(table(banknames$y, banknames$job))
+print(chi_square)
+
+library(ggplot2)
+ggplot(banknames, aes(x = job, fill = y)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of y across job categories")
+
+
+chi_square <- chisq.test(table(banknames$y, banknames$marital))
+print(chi_square)
+
+library(ggplot2)
+ggplot(banknames, aes(x = marital, fill = y)) +
+  geom_bar(position = "fill") +
+  labs(title = "Distribution of y across marital categories")
+
+
+chi_square <- chisq.test(table(banknames$y, banknames$education))
+print(chi_square)
+
+library(ggplot2)
+ggplot(banknames, aes(x = education, fill = y)) +
+  geom_bar(position = "fill") +
+  labs(title = "Distribution of y across education categories")
+
+
+chi_square <- chisq.test(table(banknames$y, banknames$default))
+print(chi_square)
+
+library(ggplot2)
+ggplot(banknames, aes(x = default, fill = y)) +
+  geom_bar(position = "fill") +
+  labs(title = "Distribution of y across default categories")
+
+chi_square <- chisq.test(table(banknames$y, banknames$housing))
+print(chi_square)
+
+library(ggplot2)
+ggplot(banknames, aes(x = housing, fill = y)) +
+  geom_bar(position = "fill") +
+  labs(title = "Distribution of y across housing categories")
+
+
+chi_square <- chisq.test(table(banknames$y, banknames$loan))
+print(chi_square)
+
+library(ggplot2)
+ggplot(banknames, aes(x = loan, fill = y)) +
+  geom_bar(position = "fill") +
+  labs(title = "Distribution of y across loan categories")
+
+
+chi_square <- chisq.test(table(banknames$y, banknames$contact))
+print(chi_square)
+
+library(ggplot2)
+ggplot(banknames, aes(x = contact, fill = y)) +
+  geom_bar(position = "fill") +
+  labs(title = "Distribution of y across contact categories")
+
+
+chi_square <- chisq.test(table(banknames$y, banknames$month))
+print(chi_square)
+
+library(ggplot2)
+ggplot(banknames, aes(x = month, fill = y)) +
+  geom_bar(position = "fill") +
+  labs(title = "Distribution of y across month categories")
+
+
+
+
+
+t_test <- t.test(age ~ y, data = banknames)
+print(t_test)
+
+ggplot(banknames, aes(x = y, y = age)) +
+  geom_boxplot() +
+  labs(title = "Distribution of age across y categories")
+
+t_test <- t.test(balance ~ y, data = banknames)
+print(t_test)
+
+ggplot(banknames, aes(x = y, y = balance)) +
+  geom_boxplot() +
+  labs(title = "Distribution of balance across y categories")
+
+t_test <- t.test(duration ~ y, data = banknames)
+print(t_test)
+
+ggplot(banknames, aes(x = y, y = duration)) +
+  geom_boxplot() +
+  labs(title = "Distribution of duration across y categories")
+
+t_test <- t.test(campaign ~ y, data = banknames)
+print(t_test)
+
+ggplot(banknames, aes(x = y, y = campaign)) +
+  geom_boxplot() +
+  labs(title = "Distribution of campaign across y categories")
+
+t_test <- t.test(pdays ~ y, data = banknames)
+print(t_test)
+
+ggplot(banknames, aes(x = y, y = pdays)) +
+  geom_boxplot() +
+  labs(title = "Distribution of pdays across y categories")
+
+t_test <- t.test(previous ~ y, data = banknames)
+print(t_test)
+
+ggplot(banknames, aes(x = y, y = previous)) +
+  geom_boxplot() +
+  labs(title = "Distribution of previous across y categories")
+
+t_test <- t.test(day ~ y, data = banknames)
+print(t_test)
+
+ggplot(banknames, aes(x = y, y = day)) +
+  geom_boxplot() +
+  labs(title = "Distribution of day across y categories")
+
+```
+#Part 5
+```{r}
+banknames1 <- read.csv("D:\\Machine Learning\\Assignment 2\\Current\\bank-full.csv" , sep = ";" , na.strings = "unknown")
+missing_counts <- colSums(is.na(banknames1))
+print(missing_counts)
+
+```
+#Part 6
+```{r}
+df <- read.csv("D:\\Machine Learning\\Assignment 2\\Current\\bank-full.csv" , sep = ";" , na.strings = "unknown")
+impute_missing_values <- function(df) {
+  
+  for (col in names(df)) {
+    
+    if (sum(is.na(df[[col]])) > 0) {
+      
+      if (is.numeric(df[[col]])) {
+        df[[col]][is.na(df[[col]])] <- mean(df[[col]], na.rm = TRUE)
+      } else {
+        
+        mode_val <- names(sort(table(df[[col]]), decreasing = TRUE))[1]
+        df[[col]][is.na(df[[col]])] <- mode_val
+      }
+    }
+  }
+  return(df)
+}
+
+missing_counts <- colSums(is.na(df))
+print(missing_counts)
+
+
+banknames_imputed <- impute_missing_values(banknames)
+
+
+missing_values_after_imputation <- colSums(is.na(banknames_imputed))
+print(missing_values_after_imputation)
+
+
+```
+#Part 7 and 8
+```{r}
+set.seed(1)
+data <- banknames_imputed[sample(nrow(banknames_imputed)), ]
+
+```
+#Part 9
+```{r}
+library(data.table)
+cols_to_encode <- c( "job" , "marital" , "education" , "default" , "housing", "loan" , "contact" , "poutcome","month" )
+
+data[cols_to_encode] <- lapply(data[cols_to_encode], factor)
+dummy_df <- data.frame(model.matrix(~.-1, data = data[cols_to_encode]))
+data <- cbind(data[, !(names(df) %in% cols_to_encode)], dummy_df)
+
+print(data)
+
+```
+#Part 10
+```{r}
+
+train_data <- data[1:36168, -8]
+test_data <- data[36169:nrow(banknames), -8]
+
+train_data_labels <- data[1:36168, 8]
+test_data_labels <- data[36169:nrow(banknames), 8]
+
+
+```
+
+
+#Part 11
+```{r}
+normalize <- function(x, min, max) {return ((x - min) / (max - min))}
+
+train_col_mins= sapply(train_data, min)
+train_col_maxs= sapply(train_data,max)
+
+banknames_train_n=as.data.frame(mapply(normalize, train_data, train_col_mins, train_col_maxs ))
+banknames_test_n=as.data.frame(mapply(normalize, test_data, train_col_mins, train_col_maxs ))
+
+```
+
+```{r}
+library(class)
+
+library(gmodels)
+banknames_test_pred <- knn(train = banknames_train_n, test = banknames_test_n,cl = train_data_labels, k = 5)
+CrossTable(x = test_data_labels, y = banknames_test_pred, prop.chisq=FALSE)
+
+```
+
+```{r}
+library(caret)
+
+folds=createFolds(train_data_labels,k=5)
+str(folds)
+
+```
+
+```{r}
+
+normalize=function(train,val)
+{
+train_col_mins= sapply(train, min)
+train_col_maxs= sapply(train,max)
+
+min_max_normalize=function(x, min, max){
+return ((x-min)/(max-min))}
+
+train_n=as.data.frame(mapply(min_max_normalize, train, train_col_mins,
+train_col_maxs ))
+val_n=as.data.frame(mapply(min_max_normalize, val, train_col_mins,
+train_col_maxs ))
+
+return (list("train_n"=train_n, "val_n"=val_n))
+}
+
+```
+
+```{r}
+knn_fold=function(features,labels,fold,kneighbors){
+train=features[-fold,]
+val=features[fold,]
+data_n= normalize(train, val)
+train_n= data_n$train_n
+val_n= data_n$val_n
+train_labels=labels[-fold]
+validation_labels=labels[fold]
+val_preds=knn(train_n,val_n,train_labels,k=kneighbors)
+t= table(validation_labels,val_preds)
+error=(t[1,2]+t[2,1])/sum(t)
+return(error)
+}
+
+```
+
+```{r}
+crossValidationError=function(features,labels,kneighbors){
+folds=createFolds(labels,k=5)
+errors=sapply(folds,knn_fold,features=features,
+labels=labels,kneighbors=kneighbors)
+return(mean(errors))}
+
+```
+
+```{r}
+crossValidationError(train_data,train_data_labels,kneighbors=5)
+
+```
+```{r}
+cat("
+The accuracy (1-error) is: approximately 0.8873867 or 88.74% 
+    ")
+
+```
+
+#Part 12
+```{r}
+ks=c(1,5,10,20,50,100,round(sqrt(nrow(train_data))))
+errors=sapply(ks,crossValidationError,features=train_data,
+labels=train_data_labels)
+
+```
+
+```{r}
+plot(errors~ks, main="Cross validation Error VsK", xlab="k", ylab="CVError")
+lines(errors~ks)
+
+```
+
+```{r}
+
+#K=20 seems to be best
+
+```
+#Part 13
+```{r}
+
+crossValidationError=function(features,labels,kneighbors){
+folds=createFolds(labels,k=20)
+errors=sapply(folds,knn_fold,features=features,
+labels=labels,kneighbors=kneighbors)
+return(mean(errors))}
+
+crossValidationError(train_data,train_data_labels,kneighbors=5)
+
+```
+#Part 14
+```{r}
+knn_model <- knn(train_data, test_data, train_data_labels, k = 20)
+
+predicted_y <- knn_model
+
+```
+
+```{r}
+library(gmodels)
+
+cross_table <- CrossTable(x = test_data_labels, y = predicted_y, prop.chisq = FALSE)
+
+print(cross_table)
+
+```
+#Part 15
+```{r}
+cat("
+False Positive Rate (FPR): This is calculated as the ratio of false positives (instances predicted as yes but are actually no) to all true negatives (instances actually labeled as no).
+FPR = FP / (TN + FP)
+
+From the table:
+FP = 822 (instances predicted as yes but are actually no)
+TN = 7819 (instances actually labeled as no)
+
+FPR = 822 / (7819 + 822) ≈ 0.095
+
+So, the False Positive Rate (FPR) is approximately 0.095.
+
+False Negative Rate (FNR): This is calculated as the ratio of false negatives (instances predicted as no but are actually yes) to all true positives (instances actually labeled as yes).
+FNR = FN / (TP + FN)
+
+From the table:
+FN = 182 (instances predicted as no but are actually yes)
+TP = 220 (instances actually labeled as yes)
+
+FNR = 182 / (220 + 182) ≈ 0.453
+
+So, the False Negative Rate (FNR) is approximately 0.453.  
+    ")
+
+```
+#Part 16
+```{r}
+
+#The accuracy of a majority classifier that predicts y="no" for all observations in the test set would depend on the distribution of the target variable in the test set. If the majority of the target variable in the test set is "no", then the majority classifier would be accurate for most cases. However, the accuracy of the kNN classifier would depend on the distribution of the target variable in the training set and the choice of k. If the target variable in the training set is well-distributed and k is chosen appropriately, then the kNN classifier could perform better than the majority classifier. ao thats why it is not possible to determine whether the kNN classifier would perform better than the majority classifier without considering the distribution of the target variable in the test set and the choice of k.
+
+
+```
+#Part 17
+```{r}
+
+#The majority classifier that predicts y="no" for all observations in the test set would have a False Positive Rate (FPR) of 0. It would have a False Negative Rate (FNR) equal to 1, as it predicts all outcomes as negative (y="no"), resulting in a failure to predict any positive outcomes. While, the kNN model's FPR and FNR would depend on the accuracy of the model in distinguishing between positive and negative outcomes. The FPR of the kNN model represents the percentage of all true negative (y="no") observations that the model predicted to be positive (y="yes")
+
+
+```
+#Problem 2: Applying Naïve Bayes to classify movie genres for horror movies
+
+#Part 1
+```{r}
+
+data <- read.csv("D:\\Machine Learning\\horror_movies.csv")
+data <- data[, c("title", "overview", "tagline", "genre_names")]
+str(data)
+
+```
+
+#Part 2
+```{r}
+
+data$text <- paste(data$title, data$overview, data$tagline, sep = " ")
+
+head(data)
+summary(data)
+
+```
+
+#Part 3
+```{r}
+
+random <- data[sample(nrow(data)), ]
+
+```
+
+#Part 4
+```{r}
+
+data$thriller <- grepl("Thriller", data$genre_names)
+data$thriller <- factor(data$thriller, levels = c(FALSE, TRUE), labels = c("FALSE", "TRUE"))
+summary(data$thriller)
+
+```
+
+#Part 5
+```{r}
+library(tm)
+library(SnowballC)
+
+movie_corpus <- VCorpus(VectorSource(data$text))
+
+replacePunctuation <- function(x) { gsub("[[:punct:]]+", " ", x) }
+
+movie_corpus_clean <- tm_map(movie_corpus, content_transformer(tolower))
+movie_corpus_clean <- tm_map(movie_corpus_clean, stemDocument)
+movie_corpus_clean <- tm_map(movie_corpus_clean, removeWords, stopwords())
+movie_corpus_clean <- tm_map(movie_corpus_clean, content_transformer(replacePunctuation))
+movie_corpus_clean <- tm_map(movie_corpus_clean, stripWhitespace)
+
+
+```
+
+
+#Part 6
+```{r}
+
+library(wordcloud)
+thriller_text <- data$text[data$thriller == "TRUE"]
+non_thriller_text <- data$text[data$thriller == "FALSE"]
+
+wordcloud(thriller_text, max.words = 40, scale = c(3, 0.5), random.order = FALSE)
+wordcloud(non_thriller_text, max.words = 40, scale = c(3, 0.5), random.order = FALSE)
+
+```
+
+#Part 7
+```{r}
+
+movie_dtm <- DocumentTermMatrix(movie_corpus_clean)
+
+movie_dtm_train <- movie_dtm[1:26032, ]
+movie_dtm_test <- movie_dtm[26033:32540, ]
+
+movie_train_labels <- data[1:26032, ]$thriller
+movie_test_labels <- data[26033:32540, ]$thriller
+
+```
+
+
+#Part 8
+```{r}
+
+movie_freq_words <- findFreqTerms(movie_dtm_train, 10)
+
+movie_dtm_freq_train<- movie_dtm_train[ , movie_freq_words]
+movie_dtm_freq_test <- movie_dtm_test[ , movie_freq_words]
+
+convert_counts <- function(x) {x <- ifelse(x > 0, "Yes", "No")}
+
+movie_train <- apply(movie_dtm_freq_train, MARGIN = 2, convert_counts)
+movie_test <- apply(movie_dtm_freq_test, MARGIN = 2, convert_counts)
+
+```
+
+```{r}
+library(e1071)
+library(gmodels)
+
+movie_classifier <- naiveBayes(movie_train, movie_train_labels)
+movie_test_pred <- predict(movie_classifier, movie_test)
+
+CrossTable(movie_test_pred, movie_test_labels,prop.chisq = FALSE, prop.t = FALSE,dnn = c('predicted', 'actual'))
+
+```
+
+```{r}
+cat("
+True Positives (TP): 255 (Naïve Bayes predicted thriller and it's true)
+False Positives (FP): 762 (Naïve Bayes predicted thriller, but it's false)
+False Negatives (FN): 711 (Naïve Bayes predicted non-thriller, but it's thriller)
+Now, we can calculate the requested metrics:
+
+Overall Accuracy:
+Overall accuracy = (TP + TN) / Total Observations
+= (255 + 4780) / 6508
+≈ 0.852
+≈ 85.2%
+
+Precision for Thriller Class:
+Precision = TP / (TP + FP)
+= 255 / (255 + 762)
+≈ 0.250
+≈ 25.0%
+
+Recall for Thriller Class:
+Recall = TP / (TP + FN)
+= 255 / (255 + 711)
+≈ 0.264
+≈ 26.4%
+
+Q1-12 correct. Q14. (-1pt) you need to pass the normalized train_data and test_data to knn. that is: knn_model <- knn(banknames_train_n,bankbanes_test_n , train_data_labels, k = 20) Q15. (-2pt) FPR and FNR are computed incorrectly. FP= 178 FN=832 Q16.(-2pt) based on your cross table, the accuracy of the majority classifier will be: #of y=no samles in the test set divided by total# of test samples, that is: cross_table$t[2,]/sum(cross_table$t) part#17 (-1pt) . What do you mean by: While, the kNN model's FPR and FNR would depend on the accuracy of the model in distinguishing between positive and negative outcomes. The FPR of the kNN model represents the percentage of all true negative (y="no") observations that the model predicted to be positive (y=yes) ? You already computed FPR and FNR of knn. So instead of copying and pasting AI general answers without adjustment, look at the numbers you got for FR and FNR of knn and compare them with majority classifier. Your answer should be something like this: compared to majority classifier, Knn has a slightly higher FPR ( put FPR of knn you computed here) and a significantly lower FNR ( put the FNR of knn you computed here) Remember, you can use AI as a helper, but your job will be to adjust AI answers and make it relevant to the assignment not copying and pasting AI answer without adjustment and turning it as your own. problem2 ************ answers are correct. good job :
+
+
+    ")
+
+
+
+```
